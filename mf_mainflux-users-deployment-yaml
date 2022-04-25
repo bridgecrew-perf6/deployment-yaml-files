@@ -1,0 +1,106 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    meta.helm.sh/release-name: mainflux
+    meta.helm.sh/release-namespace: mf
+  creationTimestamp: "2022-03-08T10:25:41Z"
+  generation: 1
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  name: mainflux-users
+  namespace: mf
+  resourceVersion: "2150342"
+  uid: 9085b3ba-2e08-448b-827f-75260d4beedb
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: mainflux
+      component: users
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: mainflux
+        component: users
+    spec:
+      containers:
+      - env:
+        - name: MF_JAEGER_URL
+          value: mainflux-jaeger-operator-jaeger-agent:6831
+        - name: MF_USERS_DB
+          value: users
+        - name: MF_USERS_DB_HOST
+          value: mainflux-postgresqlusers
+        - name: MF_USERS_DB_PASS
+          value: mainflux
+        - name: MF_USERS_DB_PORT
+          value: "5432"
+        - name: MF_USERS_DB_USER
+          value: postgres
+        - name: MF_USERS_HTTP_PORT
+          value: "8180"
+        - name: MF_USERS_LOG_LEVEL
+          value: info
+        - name: MF_AUTH_GRPC_URL
+          value: mainflux-envoy:8181
+        - name: MF_TOKEN_RESET_ENDPOINT
+          value: '#/auth/reset-password'
+        - name: MF_USERS_ADMIN_EMAIL
+          value: admin@example.com
+        - name: MF_USERS_ADMIN_PASSWORD
+          value: "12345678"
+        image: mainflux/users:latest
+        imagePullPolicy: IfNotPresent
+        name: mainflux-users
+        ports:
+        - containerPort: 8180
+          protocol: TCP
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /email.tmpl
+          name: users-config
+          subPath: email.tmpl
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          defaultMode: 256
+          name: mainflux-users-config
+          optional: false
+        name: users-config
+status:
+  availableReplicas: 1
+  conditions:
+  - lastTransitionTime: "2022-03-08T10:25:41Z"
+    lastUpdateTime: "2022-03-08T10:25:53Z"
+    message: ReplicaSet "mainflux-users-6ccd776b87" has successfully progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  - lastTransitionTime: "2022-03-08T10:26:33Z"
+    lastUpdateTime: "2022-03-08T10:26:33Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  observedGeneration: 1
+  readyReplicas: 1
+  replicas: 1
+  updatedReplicas: 1
+
+
