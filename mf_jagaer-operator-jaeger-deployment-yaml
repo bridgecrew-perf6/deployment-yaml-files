@@ -1,0 +1,153 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "3"
+    linkerd.io/inject: disabled
+    prometheus.io/port: "14269"
+    prometheus.io/scrape: "true"
+    sidecar.istio.io/inject: "false"
+  creationTimestamp: "2022-03-08T10:25:46Z"
+  generation: 3
+  labels:
+    app: jaeger
+    app.kubernetes.io/component: all-in-one
+    app.kubernetes.io/instance: mainflux-jaeger-operator-jaeger
+    app.kubernetes.io/managed-by: jaeger-operator
+    app.kubernetes.io/name: mainflux-jaeger-operator-jaeger
+    app.kubernetes.io/part-of: jaeger
+  name: mainflux-jaeger-operator-jaeger
+  namespace: mf
+  ownerReferences:
+  - apiVersion: jaegertracing.io/v1
+    controller: true
+    kind: Jaeger
+    name: mainflux-jaeger-operator-jaeger
+    uid: 9e85e629-4cf6-46d4-b68f-d93a85cb2de9
+  resourceVersion: "4531523"
+  uid: fbbc6e14-7414-44ba-8dc7-f2002ec60868
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: jaeger
+      app.kubernetes.io/component: all-in-one
+      app.kubernetes.io/instance: mainflux-jaeger-operator-jaeger
+      app.kubernetes.io/managed-by: jaeger-operator
+      app.kubernetes.io/name: mainflux-jaeger-operator-jaeger
+      app.kubernetes.io/part-of: jaeger
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        linkerd.io/inject: disabled
+        prometheus.io/port: "14269"
+        prometheus.io/scrape: "true"
+        sidecar.istio.io/inject: "false"
+      creationTimestamp: null
+      labels:
+        app: jaeger
+        app.kubernetes.io/component: all-in-one
+        app.kubernetes.io/instance: mainflux-jaeger-operator-jaeger
+        app.kubernetes.io/managed-by: jaeger-operator
+        app.kubernetes.io/name: mainflux-jaeger-operator-jaeger
+        app.kubernetes.io/part-of: jaeger
+    spec:
+      containers:
+      - args:
+        - --sampling.strategies-file=/etc/jaeger/sampling/sampling.json
+        env:
+        - name: SPAN_STORAGE_TYPE
+          value: memory
+        - name: COLLECTOR_ZIPKIN_HTTP_PORT
+          value: "9411"
+        image: jaegertracing/all-in-one:1.14.0
+        imagePullPolicy: IfNotPresent
+        name: jaeger
+        ports:
+        - containerPort: 5775
+          name: zk-compact-trft
+          protocol: UDP
+        - containerPort: 5778
+          name: config-rest
+          protocol: TCP
+        - containerPort: 6831
+          name: jg-compact-trft
+          protocol: UDP
+        - containerPort: 6832
+          name: jg-binary-trft
+          protocol: UDP
+        - containerPort: 9411
+          name: zipkin
+          protocol: TCP
+        - containerPort: 14267
+          name: c-tchan-trft
+          protocol: TCP
+        - containerPort: 14268
+          name: c-binary-trft
+          protocol: TCP
+        - containerPort: 16686
+          name: query
+          protocol: TCP
+        - containerPort: 14269
+          name: admin-http
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: 14269
+            scheme: HTTP
+          initialDelaySeconds: 1
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /etc/jaeger/sampling
+          name: mainflux-jaeger-operator-jaeger-sampling-configuration-volume
+          readOnly: true
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: mainflux-jaeger-operator-jaeger
+      serviceAccountName: mainflux-jaeger-operator-jaeger
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: sampling
+            path: sampling.json
+          name: mainflux-jaeger-operator-jaeger-sampling-configuration
+        name: mainflux-jaeger-operator-jaeger-sampling-configuration-volume
+status:
+  availableReplicas: 1
+  conditions:
+  - lastTransitionTime: "2022-03-08T10:25:59Z"
+    lastUpdateTime: "2022-03-08T10:25:59Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  - lastTransitionTime: "2022-03-08T10:25:46Z"
+    lastUpdateTime: "2022-03-17T12:51:49Z"
+    message: ReplicaSet "mainflux-jaeger-operator-jaeger-bbd4f5b5f" has successfully
+      progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  observedGeneration: 3
+  readyReplicas: 1
+  replicas: 1
+  updatedReplicas: 1
+
