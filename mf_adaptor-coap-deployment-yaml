@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    meta.helm.sh/release-name: mainflux
+    meta.helm.sh/release-namespace: mf
+  creationTimestamp: "2022-03-08T10:25:41Z"
+  generation: 1
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  name: mainflux-adapter-coap
+  namespace: mf
+  resourceVersion: "2150182"
+  uid: e0a169a1-f524-421f-a074-9b690a8ac5c5
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: mainflux
+      component: adapter-coap
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: mainflux
+        component: adapter-coap
+    spec:
+      containers:
+      - env:
+        - name: MF_JAEGER_URL
+          value: mainflux-jaeger-operator-jaeger-agent:6831
+        - name: MF_NATS_URL
+          value: nats://mainflux-nats-client:4222
+        - name: MF_THINGS_AUTH_GRPC_URL
+          value: mainflux-envoy:8183
+        - name: MF_COAP_ADAPTER_LOG_LEVEL
+          value: info
+        - name: MF_COAP_ADAPTER_PORT
+          value: "5683"
+        image: mainflux/coap:latest
+        imagePullPolicy: IfNotPresent
+        name: mainflux-adapter-coap
+        ports:
+        - containerPort: 5683
+          name: udp-5683
+          protocol: UDP
+        - containerPort: 5683
+          name: tcp-5683
+          protocol: TCP
+        resources: {}
+        stdin: true
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        tty: true
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+status:
+  availableReplicas: 1
+  conditions:
+  - lastTransitionTime: "2022-03-08T10:25:41Z"
+    lastUpdateTime: "2022-03-08T10:25:51Z"
+    message: ReplicaSet "mainflux-adapter-coap-858cd55959" has successfully progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  - lastTransitionTime: "2022-03-08T10:26:10Z"
+    lastUpdateTime: "2022-03-08T10:26:10Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  observedGeneration: 1
+  readyReplicas: 1
+  replicas: 1
+  updatedReplicas: 1
+
