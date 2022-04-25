@@ -1,0 +1,109 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    meta.helm.sh/release-name: mainflux
+    meta.helm.sh/release-namespace: mf
+  creationTimestamp: "2022-03-08T10:25:41Z"
+  generation: 1
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  name: mainflux-influxdb-writer
+  namespace: mf
+  resourceVersion: "2150147"
+  uid: 4a8d1662-be03-4a01-a7a0-e5952c0ddb68
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: mainflux
+      component: influxdb-writer
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: mainflux
+        component: influxdb-writer
+    spec:
+      containers:
+      - env:
+        - name: MF_INFLUX_WRITER_LOG_LEVEL
+          value: debug
+        - name: MF_NATS_URL
+          value: nats://mainflux-nats-client:4222
+        - name: MF_INFLUX_WRITER_PORT
+          value: "8900"
+        - name: MF_INFLUX_WRITER_BATCH_SIZE
+          value: "5000"
+        - name: MF_INFLUX_WRITER_BATCH_TIMEOUT
+          value: "5"
+        - name: MF_INFLUX_WRITER_DB
+          value: mainflux
+        - name: MF_INFLUX_WRITER_DB_USER
+          value: mainflux
+        - name: MF_INFLUX_WRITER_DB_PASS
+          value: mainflux
+        - name: MF_INFLUX_WRITER_DB_HOST
+          value: mainflux-influxdb
+        - name: MF_INFLUX_WRITER_DB_PORT
+          value: "8086"
+        - name: MF_INFLUX_WRITER_CONFIG_PATH
+          value: /config.toml
+        - name: MF_INFLUX_WRITER_CONTENT_TYPE
+          value: application/senml+json
+        - name: MF_INFLUX_WRITER_TRANSFORMER
+          value: senml
+        image: mainflux/influxdb-writer:latest
+        imagePullPolicy: IfNotPresent
+        name: mainflux-influxdb-writer
+        ports:
+        - containerPort: 8900
+          protocol: TCP
+        resources: {}
+        stdin: true
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        tty: true
+        volumeMounts:
+        - mountPath: /config.toml
+          name: influxdb-writer-config
+          subPath: subjects.toml
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          defaultMode: 256
+          name: mainflux-influxdb-writer-config
+          optional: false
+        name: influxdb-writer-config
+status:
+  availableReplicas: 1
+  conditions:
+  - lastTransitionTime: "2022-03-08T10:26:08Z"
+    lastUpdateTime: "2022-03-08T10:26:08Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  - lastTransitionTime: "2022-03-08T10:25:41Z"
+    lastUpdateTime: "2022-03-08T10:26:08Z"
+    message: ReplicaSet "mainflux-influxdb-writer-b6679f56b" has successfully progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  observedGeneration: 1
+  readyReplicas: 1
+  replicas: 1
+  updatedReplicas: 1
+
