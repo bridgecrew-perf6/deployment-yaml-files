@@ -1,0 +1,154 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    meta.helm.sh/release-name: mainflux
+    meta.helm.sh/release-namespace: mf
+  creationTimestamp: "2022-03-08T10:25:41Z"
+  generation: 1
+  labels:
+    app.kubernetes.io/component: influxdb
+    app.kubernetes.io/instance: mainflux
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: influxdb
+    helm.sh/chart: influxdb-1.1.9
+  name: mainflux-influxdb
+  namespace: mf
+  resourceVersion: "2150539"
+  uid: 3562c3a1-1159-4bda-897f-7f14f73a0536
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: influxdb
+      app.kubernetes.io/instance: mainflux
+      app.kubernetes.io/name: influxdb
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app.kubernetes.io/component: influxdb
+        app.kubernetes.io/instance: mainflux
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: influxdb
+        helm.sh/chart: influxdb-1.1.9
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/component: influxdb
+                  app.kubernetes.io/instance: mainflux
+                  app.kubernetes.io/name: influxdb
+              namespaces:
+              - mf
+              topologyKey: kubernetes.io/hostname
+            weight: 1
+      containers:
+      - env:
+        - name: BITNAMI_DEBUG
+          value: "false"
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.podIP
+        - name: INFLUXDB_HTTP_AUTH_ENABLED
+          value: "true"
+        - name: INFLUXDB_ADMIN_USER
+          value: mainflux
+        - name: INFLUXDB_ADMIN_USER_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: admin-user-password
+              name: mainflux-influxdb
+        - name: INFLUXDB_DB
+          value: mainflux
+        image: docker.io/bitnami/influxdb:1.8.3-debian-10-r88
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          exec:
+            command:
+            - bash
+            - -c
+            - |
+              if [[ -f "${INFLUXDB_ADMIN_USER_PASSWORD_FILE:-}" ]]; then
+                  export INFLUXDB_ADMIN_USER_PASSWORD="$(< "${INFLUXDB_ADMIN_USER_PASSWORD_FILE}")"
+              fi
+              INFLUX_USERNAME="$INFLUXDB_ADMIN_USER" INFLUX_PASSWORD="$INFLUXDB_ADMIN_USER_PASSWORD" timeout 29s influx -host $POD_IP -port 8086 -execute "SHOW DATABASES"
+          failureThreshold: 6
+          initialDelaySeconds: 180
+          periodSeconds: 45
+          successThreshold: 1
+          timeoutSeconds: 30
+        name: influxdb
+        ports:
+        - containerPort: 8086
+          name: http
+          protocol: TCP
+        - containerPort: 8088
+          name: rpc
+          protocol: TCP
+        readinessProbe:
+          exec:
+            command:
+            - bash
+            - -c
+            - |
+              if [[ -f "${INFLUXDB_ADMIN_USER_PASSWORD_FILE:-}" ]]; then
+                  export INFLUXDB_ADMIN_USER_PASSWORD="$(< "${INFLUXDB_ADMIN_USER_PASSWORD_FILE}")"
+              fi
+              INFLUX_USERNAME="$INFLUXDB_ADMIN_USER" INFLUX_PASSWORD="$INFLUXDB_ADMIN_USER_PASSWORD" timeout 29s influx -host $POD_IP -port 8086 -execute "SHOW DATABASES"
+          failureThreshold: 6
+          initialDelaySeconds: 60
+          periodSeconds: 45
+          successThreshold: 1
+          timeoutSeconds: 30
+        resources: {}
+        securityContext:
+          runAsUser: 1001
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /bitnami/influxdb
+          name: data
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        fsGroup: 1001
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: mainflux-influxdb
+status:
+  availableReplicas: 1
+  conditions:
+  - lastTransitionTime: "2022-03-08T10:27:18Z"
+    lastUpdateTime: "2022-03-08T10:27:18Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  - lastTransitionTime: "2022-03-08T10:25:41Z"
+    lastUpdateTime: "2022-03-08T10:27:18Z"
+    message: ReplicaSet "mainflux-influxdb-78488878cd" has successfully progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  observedGeneration: 1
+  readyReplicas: 1
+  replicas: 1
+  updatedReplicas: 1
+
