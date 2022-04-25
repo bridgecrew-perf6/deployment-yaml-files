@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "10"
+    meta.helm.sh/release-name: mainflux
+    meta.helm.sh/release-namespace: mf
+  creationTimestamp: "2022-03-08T17:09:25Z"
+  generation: 10
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  name: mainflux-adapter-lora
+  namespace: mf
+  resourceVersion: "4538054"
+  uid: ad383e0b-07ee-467e-8c43-b8fe132810ba
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: mainflux
+      component: adapter-lora
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: mainflux
+        component: adapter-lora
+    spec:
+      containers:
+      - env:
+        - name: MF_LORA_ADAPTER_HTTP_PORT
+          value: "8187"
+        - name: MF_LORA_ADAPTER_LOG_LEVEL
+          value: info
+        - name: MF_NATS_URL
+          value: nats://mainflux-nats-client:4222
+        - name: MF_LORA_ADAPTER_MESSAGES_URL
+          value: tcp://chirpstack-mosquitto.lora.svc.cluster.local:1883
+        - name: MF_LORA_ADAPTER_ROUTE_MAP_URL
+          value: mainflux-redis-lora-master:6379
+        - name: MF_THINGS_ES_URL
+          value: mainflux-redis-streams-master:6379
+        image: mainflux/lora:latest
+        imagePullPolicy: IfNotPresent
+        name: mainflux-adapter-lora
+        ports:
+        - containerPort: 8187
+          protocol: TCP
+        resources: {}
+        stdin: true
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        tty: true
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+status:
+  availableReplicas: 1
+  conditions:
+  - lastTransitionTime: "2022-03-08T17:09:25Z"
+    lastUpdateTime: "2022-03-17T13:25:07Z"
+    message: ReplicaSet "mainflux-adapter-lora-69976cf6d7" has successfully progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  - lastTransitionTime: "2022-03-17T13:26:11Z"
+    lastUpdateTime: "2022-03-17T13:26:11Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  observedGeneration: 10
+  readyReplicas: 1
+  replicas: 1
+  updatedReplicas: 1
+
